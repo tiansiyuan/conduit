@@ -1,10 +1,25 @@
 import 'whatwg-fetch';
 
 export const ApiHelpers = pathPrefix => {
+  let metricsWindow = '1m';
   const podsPath = `${pathPrefix}/api/pods`;
+  const metricsPath = () => `${pathPrefix}/api/metrics?window=${metricsWindow}`;
+
+  const validMetricsWindows = {
+    "10s": true,
+    "1m": true,
+    "10m": true
+  };
 
   const apiFetch = path => {
     return fetch(path).then(handleFetchErr).then(r => r.json());
+  };
+
+  const fetchMetrics = (path = metricsPath()) => {
+    if (path.indexOf("window") === -1) {
+      path = `${path}&window=${getMetricsWindow()}`;
+    }
+    return apiFetch(path);
   };
 
   const fetchPods = () => {
@@ -18,20 +33,15 @@ export const ApiHelpers = pathPrefix => {
     return resp;
   };
 
-  return {
-    fetch: apiFetch,
-    fetchPods
+  const getMetricsWindow = () => metricsWindow;
+
+  const setMetricsWindow = window => {
+    if (!validMetricsWindows[window]) return;
+    metricsWindow = window;
   };
-};
 
-export const urlsForResource = (pathPrefix, metricsWindow) => {
-  /*
-    Timeseries fetches used in the TabbedMetricsTable
-    Rollup fetches used throughout app
-  */
-  let metricsUrl = `${pathPrefix}/api/metrics?window=${metricsWindow}`;
-
-  return {
+  const metricsUrl = `${pathPrefix}/api/metrics?`;
+  const urlsForResource = {
     // all deploys (default), or a given deploy if specified
     "deployment": {
       groupBy: "targetDeploy",
@@ -118,5 +128,14 @@ export const urlsForResource = (pathPrefix, metricsWindow) => {
         };
       }
     }
+  };
+
+  return {
+    fetch: apiFetch,
+    fetchMetrics,
+    fetchPods,
+    getMetricsWindow,
+    setMetricsWindow,
+    urlsForResource: urlsForResource
   };
 };

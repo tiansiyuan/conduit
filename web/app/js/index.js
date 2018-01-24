@@ -1,3 +1,4 @@
+import { ApiHelpers } from './components/util/ApiHelpers.js';
 import DeploymentDetail from './components/DeploymentDetail.jsx';
 import DeploymentsList from './components/DeploymentsList.jsx';
 import { Layout } from 'antd';
@@ -21,6 +22,8 @@ if (proxyPathMatch) {
   pathPrefix = proxyPathMatch[0];
 }
 
+let api = ApiHelpers(pathPrefix);
+
 ReactDOM.render((
   <BrowserRouter>
     <Layout>
@@ -32,11 +35,11 @@ ReactDOM.render((
           <div className="main-content">
             <Switch>
               <Redirect exact from={`${pathPrefix}/`} to={`${pathPrefix}/servicemesh`} />
-              <Route path={`${pathPrefix}/servicemesh`} render={() => <ServiceMesh pathPrefix={pathPrefix} releaseVersion={appData.releaseVersion} />} />
-              <Route path={`${pathPrefix}/deployments`} render={() => <DeploymentsList pathPrefix={pathPrefix} />} />
-              <Route path={`${pathPrefix}/deployment`} render={props => <DeploymentDetail pathPrefix={pathPrefix} location={props.location} />} />
-              <Route path={`${pathPrefix}/paths`} render={props => <Paths pathPrefix={pathPrefix} location={props.location} />} />
-              <Route path={`${pathPrefix}/pod`} render={props => <PodDetail pathPrefix={pathPrefix} location={props.location} />} />
+              <Route path={`${pathPrefix}/servicemesh`} render={() => <ServiceMesh pathPrefix={pathPrefix} api={api} releaseVersion={appData.releaseVersion} />} />
+              <Route path={`${pathPrefix}/deployments`} render={() => <DeploymentsList pathPrefix={pathPrefix} api={api} />} />
+              <Route path={`${pathPrefix}/deployment`} render={props => <DeploymentDetail pathPrefix={pathPrefix} api={api} location={props.location} />} />
+              <Route path={`${pathPrefix}/paths`} render={props => <Paths pathPrefix={pathPrefix} api={api} location={props.location} />} />
+              <Route path={`${pathPrefix}/pod`} render={props => <PodDetail pathPrefix={pathPrefix} api={api} location={props.location} />} />
               <Route path={`${pathPrefix}/routes`} render={() => <Routes pathPrefix={pathPrefix} />} />
               <Route component={NoMatch} />
             </Switch>

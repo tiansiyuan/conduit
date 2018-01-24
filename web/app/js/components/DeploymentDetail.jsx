@@ -4,13 +4,13 @@ import ConduitSpinner from "./ConduitSpinner.jsx";
 import ErrorBanner from './ErrorBanner.jsx';
 import { incompleteMeshMessage } from './util/CopyUtils.jsx';
 import Metric from './Metric.jsx';
+import PageHeader from './PageHeader.jsx';
 import React from 'react';
 import ResourceHealthOverview from './ResourceHealthOverview.jsx';
 import ResourceMetricsOverview from './ResourceMetricsOverview.jsx';
 import { rowGutter } from './util/Utils.js';
 import TabbedMetricsTable from './TabbedMetricsTable.jsx';
 import UpstreamDownstream from './UpstreamDownstream.jsx';
-import { ApiHelpers, urlsForResource } from './util/ApiHelpers.js';
 import { Col, Row } from 'antd';
 import { emptyMetric, getPodsByDeployment, processRollupMetrics, processTimeseriesMetrics } from './util/MetricUtils.js';
 import './../../css/deployment.css';
@@ -19,7 +19,7 @@ import 'whatwg-fetch';
 export default class DeploymentDetail extends React.Component {
   constructor(props) {
     super(props);
-    this.api = ApiHelpers(this.props.pathPrefix);
+    this.api = this.props.api;
     this.handleApiError = this.handleApiError.bind(this);
     this.loadFromServer = this.loadFromServer.bind(this);
     this.state = this.initialState(this.props.location);
@@ -66,7 +66,7 @@ export default class DeploymentDetail extends React.Component {
     }
     this.setState({ pendingRequests: true });
 
-    let urls = urlsForResource(this.props.pathPrefix, this.state.metricsWindow);
+    let urls = this.api.urlsForResource;
 
     let deployMetricsUrl = urls["deployment"].url(this.state.deploy).ts;
     let podRollupUrl = urls["pod"].url(this.state.deploy).rollup;
@@ -74,12 +74,12 @@ export default class DeploymentDetail extends React.Component {
     let downstreamRollupUrl = urls["downstream_deployment"].url(this.state.deploy).rollup;
     let pathMetricsUrl = urls["path"].url(this.state.deploy).rollup;
 
-    let deployFetch = this.api.fetch(deployMetricsUrl);
+    let deployFetch = this.api.fetchMetrics(deployMetricsUrl);
     let podListFetch = this.api.fetchPods();
-    let podRollupFetch = this.api.fetch(podRollupUrl);
-    let upstreamFetch = this.api.fetch(upstreamRollupUrl);
-    let downstreamFetch = this.api.fetch(downstreamRollupUrl);
-    let pathsFetch = this.api.fetch(pathMetricsUrl);
+    let podRollupFetch = this.api.fetchMetrics(podRollupUrl);
+    let upstreamFetch = this.api.fetchMetrics(upstreamRollupUrl);
+    let downstreamFetch = this.api.fetchMetrics(downstreamRollupUrl);
+    let pathsFetch = this.api.fetchMetrics(pathMetricsUrl);
 
     // expose serverPromise for testing
     this.serverPromise = Promise.all([deployFetch, podRollupFetch, upstreamFetch, downstreamFetch, podListFetch, pathsFetch])
@@ -151,7 +151,7 @@ export default class DeploymentDetail extends React.Component {
         lastUpdated={this.state.lastUpdated}
         upstreamMetrics={this.state.upstreamMetrics}
         downstreamMetrics={this.state.downstreamMetrics}
-        metricsWindow={this.state.metricsWindow}
+        api={this.api}
         pathPrefix={this.props.pathPrefix} />,
       this.renderPaths()
     ];
@@ -189,7 +189,7 @@ export default class DeploymentDetail extends React.Component {
               metrics={podTableData}
               lastUpdated={this.state.lastUpdated}
               pathPrefix={this.props.pathPrefix}
-              metricsWindow={this.state.metricsWindow} />
+              api={this.api} />
           </div>
         </Col>
 
@@ -220,8 +220,8 @@ export default class DeploymentDetail extends React.Component {
           metrics={this.state.pathMetrics}
           hideSparklines={true}
           lastUpdated={this.props.lastUpdated}
-          metricsWindow={this.props.metricsWindow}
-          pathPrefix={this.props.pathPrefix} />
+          pathPrefix={this.props.pathPrefix}
+          api={this.api} />
       </div>;
   }
 
@@ -231,12 +231,7 @@ export default class DeploymentDetail extends React.Component {
         <h1>{this.state.deploy}</h1>
         {
           !this.state.added ? (
-            <div className="unadded-message">
-              <div className="status-badge unadded"><p>UNADDED</p></div>
-              <div className="call-to-action">
-                {incompleteMeshMessage(this.state.deploy)}
-              </div>
-            </div>
+            <p className="status-badge unadded">UNADDED</p>
           ) : null
         }
       </div>
@@ -249,10 +244,12 @@ export default class DeploymentDetail extends React.Component {
         { !this.state.error ? null : <ErrorBanner message={this.state.error} /> }
         { !this.state.loaded ? <ConduitSpinner /> :
           <div>
-            <div className="page-header">
-              <div className="subsection-header">Deployment detail</div>
-              {this.renderDeploymentTitle()}
-            </div>
+            <PageHeader
+              subHeaderTitle="Deployment detail"
+              subHeader={this.renderDeploymentTitle()}
+              subMessage={incompleteMeshMessage(this.state.deploy)}
+              api={this.api} />
+
             {this.renderSections()}
           </div>
         }

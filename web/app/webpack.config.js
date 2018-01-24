@@ -7,7 +7,7 @@ module.exports = {
     publicPath: 'dist/',
     filename: 'index_bundle.js'
   },
-  // devtool: 'source-map', // uncomment for nicer logging, makes dev slower
+  devtool: 'source-map', // uncomment for nicer logging, makes dev slower
   externals: {
     cheerio: 'window',
     'react/addons': 'react',

@@ -1,6 +1,7 @@
 import ConduitSpinner from "./ConduitSpinner.jsx";
 import ErrorBanner from './ErrorBanner.jsx';
 import { processRollupMetrics } from './util/MetricUtils.js';
+import PageHeader from './PageHeader.jsx';
 import React from 'react';
 import TabbedMetricsTable from './TabbedMetricsTable.jsx';
 import { ApiHelpers, urlsForResource } from './util/ApiHelpers.js';
@@ -9,7 +10,7 @@ import 'whatwg-fetch';
 export default class Paths extends React.Component {
   constructor(props) {
     super(props);
-    this.api = ApiHelpers(this.props.pathPrefix);
+    this.api = this.props.api;
     this.handleApiError = this.handleApiError.bind(this);
     this.loadFromServer = this.loadFromServer.bind(this);
     this.state = this.initialState();
@@ -17,6 +18,7 @@ export default class Paths extends React.Component {
 
   componentDidMount() {
     this.loadFromServer();
+    this.api = this.props.api;
     this.timerId = window.setInterval(this.loadFromServer, this.state.pollingInterval);
   }
 
@@ -42,9 +44,9 @@ export default class Paths extends React.Component {
     }
     this.setState({ pendingRequests: true });
 
-    let urls = urlsForResource(this.props.pathPrefix, this.state.metricsWindow);
+    let urls = this.api.urlsForResource;
 
-    this.api.fetch(urls["path"].url().rollup).then(r => {
+    this.api.fetchMetrics(urls["path"].url().rollup).then(r => {
       let metrics = processRollupMetrics(r.metrics, "path");
 
       this.setState({
@@ -70,16 +72,14 @@ export default class Paths extends React.Component {
         { !this.state.error ? null : <ErrorBanner message={this.state.error} /> }
         { !this.state.loaded ? <ConduitSpinner /> :
           <div>
-            <div className="page-header">
-              <h1>Paths</h1>
-            </div>
+            <PageHeader header="Paths" api={this.api} />
 
             <TabbedMetricsTable
               resource="path"
               metrics={this.state.metrics}
               lastUpdated={this.state.lastUpdated}
               pathPrefix={this.props.pathPrefix}
-              metricsWindow={this.state.metricsWindow}
+              api={this.api}
               sortable={true}
               hideSparklines={true} />
           </div>

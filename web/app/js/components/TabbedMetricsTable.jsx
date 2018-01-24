@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import Percentage from './util/Percentage.js';
 import { processTimeseriesMetrics } from './util/MetricUtils.js';
 import React from 'react';
-import { ApiHelpers, urlsForResource } from './util/ApiHelpers.js';
 import { metricToFormatter, toClassName } from './util/Utils.js';
 import { Table, Tabs } from 'antd';
 
@@ -115,11 +114,11 @@ const nameToDataKey = {
 export default class TabbedMetricsTable extends React.Component {
   constructor(props) {
     super(props);
-    this.api = ApiHelpers(this.props.pathPrefix);
+    this.api = this.props.api;
     this.handleApiError = this.handleApiError.bind(this);
     this.loadFromServer = this.loadFromServer.bind(this);
 
-    let tsHelper = urlsForResource(this.props.pathPrefix, this.props.metricsWindow)[this.props.resource];
+    let tsHelper = this.api.urlsForResource[this.props.resource];
 
     this.state = {
       timeseries: {},
@@ -128,7 +127,6 @@ export default class TabbedMetricsTable extends React.Component {
       metricsUrl: tsHelper.url(this.props.resourceName),
       error: '',
       lastUpdated: this.props.lastUpdated,
-      metricsWindow: "10s",
       pollingInterval: 10000,
       pendingRequests: false
     };
@@ -167,7 +165,7 @@ export default class TabbedMetricsTable extends React.Component {
     }
     this.setState({ pendingRequests: true });
 
-    this.api.fetch(this.state.metricsUrl.ts)
+    this.api.fetchMetrics(this.state.metricsUrl.ts)
       .then(tsResp => {
         let tsByEntity = processTimeseriesMetrics(tsResp.metrics, this.state.groupBy);
         this.setState({
