@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import { ApiHelpers } from './util/ApiHelpers.js';
 import CallToAction from './CallToAction.jsx';
 import ConduitSpinner from "./ConduitSpinner.jsx";
 import DeploymentSummary from './DeploymentSummary.jsx';
@@ -54,7 +53,7 @@ export default class ServiceMesh extends React.Component {
     super(props);
     this.loadFromServer = this.loadFromServer.bind(this);
     this.handleApiError = this.handleApiError.bind(this);
-    this.api = ApiHelpers(this.props.pathPrefix);
+    this.api = this.props.api;
 
     this.state = {
       pollingInterval: 2000,
@@ -240,8 +239,7 @@ export default class ServiceMesh extends React.Component {
         <StatusTable
           data={this.state.deploys}
           statusColumnTitle="Proxy Status"
-          shouldLink={true}
-          pathPrefix={this.props.pathPrefix} />
+          shouldLink={true} />
       </div>
     );
   }

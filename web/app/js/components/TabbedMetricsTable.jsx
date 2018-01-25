@@ -1,6 +1,6 @@
 import _ from 'lodash';
+import { ConduitLink } from '../../js/index.js';
 import LineGraph from './LineGraph.jsx';
-import { Link } from 'react-router-dom';
 import Percentage from './util/Percentage.js';
 import { processTimeseriesMetrics } from './util/MetricUtils.js';
 import React from 'react';
@@ -24,14 +24,14 @@ const resourceInfo = {
 
 const generateColumns = sortable => {
   return {
-    resourceName: (resource, pathPrefix) => {
+    resourceName: resource => {
       return {
         title: resource.title,
         dataIndex: "name",
         key: "name",
         sorter: sortable ? (a, b) => (a.name || "").localeCompare(b.name) : false,
         render: name => !resource.url ? name :
-          <Link to={`${pathPrefix}${resource.url}${name}`}>{name}</Link>
+          <ConduitLink to={`${resource.url}${name}`} name={name} />
       };
     },
     successRate: {
@@ -90,14 +90,14 @@ const numericSort = (a, b) => (_.isNil(a) ? -1 : a) - (_.isNil(b) ? -1 : b);
 
 const metricToColumns = baseCols => {
   return {
-    requestRate: (resource, pathPrefix) => [
-      baseCols.resourceName(resource, pathPrefix),
+    requestRate: resource => [
+      baseCols.resourceName(resource),
       baseCols.requests,
       resource.title === "deployment" ? null : baseCols.requestDistribution
     ],
-    successRate: (resource, pathPrefix) => [baseCols.resourceName(resource, pathPrefix), baseCols.successRate],
-    latency: (resource, pathPrefix) => [
-      baseCols.resourceName(resource, pathPrefix),
+    successRate: resource => [baseCols.resourceName(resource), baseCols.successRate],
+    latency: resource => [
+      baseCols.resourceName(resource),
       baseCols.latencyP99,
       baseCols.latencyP95,
       baseCols.latencyP50
@@ -211,7 +211,7 @@ export default class TabbedMetricsTable extends React.Component {
   renderTable(metric) {
     let resource = resourceInfo[this.props.resource];
     let columnDefinitions = metricToColumns(generateColumns(this.props.sortable));
-    let columns = _.compact(columnDefinitions[metric](resource, this.props.pathPrefix));
+    let columns = _.compact(columnDefinitions[metric](resource));
     if (!this.props.hideSparklines) {
       columns.push(this.getSparklineColumn(metric));
     }

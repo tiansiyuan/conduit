@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { Link } from 'react-router-dom';
+import { ConduitLink } from '../../js/index.js';
 import React from 'react';
 import { Table, Tooltip } from 'antd';
 
@@ -37,12 +37,12 @@ const StatusDot = ({status, multilineDots, columnName}) => (
 );
 
 const columns = {
-  resourceName: (shouldLink, pathPrefix) => {
+  resourceName: shouldLink => {
     return {
       title: "Deployment",
       dataIndex: "name",
       key: "name",
-      render: name => shouldLink ? <Link to={`${pathPrefix}/deployment?deploy=${name}`}>{name}</Link> : name
+      render: name => shouldLink ? <ConduitLink to={`/deployment?deploy=${name}`} name={name} /> : name
     };
   },
   pods: {
@@ -85,7 +85,7 @@ export default class StatusTable extends React.Component {
 
   render() {
     let tableCols = [
-      columns.resourceName(this.props.shouldLink, this.props.pathPrefix),
+      columns.resourceName(this.props.shouldLink),
       columns.pods,
       columns.status(this.props.statusColumnTitle)
     ];

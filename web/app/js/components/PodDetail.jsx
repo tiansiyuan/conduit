@@ -117,7 +117,6 @@ export default class PodDetail extends React.Component {
         lastUpdated={this.state.lastUpdated}
         upstreamMetrics={this.state.upstreamMetrics}
         downstreamMetrics={this.state.downstreamMetrics}
-        pathPrefix={this.props.pathPrefix}
         api={this.api} />
     ];
   }

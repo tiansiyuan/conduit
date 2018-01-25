@@ -1,5 +1,5 @@
+import { ConduitLink } from '../../js/index.js';
 import LineGraph from './LineGraph.jsx';
-import { Link } from 'react-router-dom';
 import React from 'react';
 import { metricToFormatter, toClassName } from './util/Utils.js';
 
@@ -8,7 +8,9 @@ export default class DeploymentSummary extends React.Component {
     if (this.props.noLink) {
       return this.props.data.name;
     } else {
-      return <Link to={`${this.props.pathPrefix}/deployment?deploy=${this.props.data.name}`}>{this.props.data.name}</Link>;
+      return (<ConduitLink
+        to={`/deployment?deploy=${this.props.data.name}`}
+        name={this.props.data.name} />);
     }
   }
 

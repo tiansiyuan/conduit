@@ -26,8 +26,7 @@ export default class UpstreamDownstreamTables extends React.Component {
                   hideSparklines={numUpstreams > maxTsToFetch}
                   lastUpdated={this.props.lastUpdated}
                   metrics={this.props.upstreamMetrics}
-                  api={this.props.api}
-                  pathPrefix={this.props.pathPrefix} />
+                  api={this.props.api} />
               </div>
           }
           {
@@ -44,8 +43,7 @@ export default class UpstreamDownstreamTables extends React.Component {
                   hideSparklines={numDownstreams > maxTsToFetch}
                   lastUpdated={this.props.lastUpdated}
                   metrics={this.props.downstreamMetrics}
-                  api={this.props.api}
-                  pathPrefix={this.props.pathPrefix} />
+                  api={this.props.api} />
               </div>
           }
         </Col>

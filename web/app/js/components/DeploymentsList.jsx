@@ -144,8 +144,7 @@ export default class DeploymentsList extends React.Component {
                   key={deployment.name}
                   lastUpdated={this.state.lastUpdated}
                   data={deployment}
-                  requestTs={_.get(this.state.timeseriesByDeploy, [deployment.name, "REQUEST_RATE"], [])}
-                  pathPrefix={this.props.pathPrefix} />
+                  requestTs={_.get(this.state.timeseriesByDeploy, [deployment.name, "REQUEST_RATE"], [])} />
               </Col>);
             })
           }
@@ -159,7 +158,6 @@ export default class DeploymentsList extends React.Component {
             lastUpdated={this.state.lastUpdated}
             metrics={this.state.metrics}
             hideSparklines={this.state.limitSparklineData}
-            pathPrefix={this.props.pathPrefix}
             api={this.api} />
         </div>
       </div>

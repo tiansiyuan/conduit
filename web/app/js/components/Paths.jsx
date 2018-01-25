@@ -1,10 +1,9 @@
 import ConduitSpinner from "./ConduitSpinner.jsx";
 import ErrorBanner from './ErrorBanner.jsx';
-import { processRollupMetrics } from './util/MetricUtils.js';
 import PageHeader from './PageHeader.jsx';
+import { processRollupMetrics } from './util/MetricUtils.js';
 import React from 'react';
 import TabbedMetricsTable from './TabbedMetricsTable.jsx';
-import { ApiHelpers, urlsForResource } from './util/ApiHelpers.js';
 import 'whatwg-fetch';
 
 export default class Paths extends React.Component {
@@ -18,7 +17,6 @@ export default class Paths extends React.Component {
 
   componentDidMount() {
     this.loadFromServer();
-    this.api = this.props.api;
     this.timerId = window.setInterval(this.loadFromServer, this.state.pollingInterval);
   }
 
@@ -78,7 +76,6 @@ export default class Paths extends React.Component {
               resource="path"
               metrics={this.state.metrics}
               lastUpdated={this.state.lastUpdated}
-              pathPrefix={this.props.pathPrefix}
               api={this.api}
               sortable={true}
               hideSparklines={true} />

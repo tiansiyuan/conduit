@@ -151,8 +151,7 @@ export default class DeploymentDetail extends React.Component {
         lastUpdated={this.state.lastUpdated}
         upstreamMetrics={this.state.upstreamMetrics}
         downstreamMetrics={this.state.downstreamMetrics}
-        api={this.api}
-        pathPrefix={this.props.pathPrefix} />,
+        api={this.api} />,
       this.renderPaths()
     ];
   }
@@ -188,7 +187,6 @@ export default class DeploymentDetail extends React.Component {
               resourceName={this.state.deploy}
               metrics={podTableData}
               lastUpdated={this.state.lastUpdated}
-              pathPrefix={this.props.pathPrefix}
               api={this.api} />
           </div>
         </Col>
@@ -220,7 +218,6 @@ export default class DeploymentDetail extends React.Component {
           metrics={this.state.pathMetrics}
           hideSparklines={true}
           lastUpdated={this.props.lastUpdated}
-          pathPrefix={this.props.pathPrefix}
           api={this.api} />
       </div>;
   }
