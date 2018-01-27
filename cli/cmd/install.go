@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"text/template"
 
+	"github.com/runconduit/conduit/pkg/k8s"
 	"github.com/runconduit/conduit/pkg/version"
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
@@ -98,9 +99,9 @@ metadata:
   namespace: {{.Namespace}}
   labels:
     app: controller
-    conduit.io/plane: control
+    {{.ControllerComponentLabel}}: controller
   annotations:
-    conduit.io/created-by: "{{.CliVersion}}"
+    {{.CreatedByAnnotation}}: {{.CliVersion}}
 spec:
   type: ClusterIP
   selector:
@@ -118,9 +119,9 @@ metadata:
   namespace: {{.Namespace}}
   labels:
     app: controller
-    conduit.io/plane: control
+    {{.ControllerComponentLabel}}: controller
   annotations:
-    conduit.io/created-by: "{{.CliVersion}}"
+    {{.CreatedByAnnotation}}: {{.CliVersion}}
 spec:
   type: ClusterIP
   selector:
@@ -138,18 +139,18 @@ metadata:
   namespace: {{.Namespace}}
   labels:
     app: controller
-    conduit.io/plane: control
+    {{.ControllerComponentLabel}}: controller
   annotations:
-    conduit.io/created-by: "{{.CliVersion}}"
+    {{.CreatedByAnnotation}}: {{.CliVersion}}
 spec:
   replicas: {{.ControllerReplicas}}
   template:
     metadata:
       labels:
         app: controller
-        conduit.io/plane: control
+        {{.ControllerComponentLabel}}: controller
       annotations:
-        conduit.io/created-by: "{{.CliVersion}}"
+        {{.CreatedByAnnotation}}: {{.CliVersion}}
     spec:
       serviceAccount: conduit-controller
       containers:
@@ -229,9 +230,9 @@ metadata:
   namespace: {{.Namespace}}
   labels:
     app: web
-    conduit.io/plane: control
+    {{.ControllerComponentLabel}}: web
   annotations:
-    conduit.io/created-by: "{{.CliVersion}}"
+    {{.CreatedByAnnotation}}: {{.CliVersion}}
 spec:
   type: ClusterIP
   selector:
@@ -252,18 +253,18 @@ metadata:
   namespace: {{.Namespace}}
   labels:
     app: web
-    conduit.io/plane: control
+    {{.ControllerComponentLabel}}: web
   annotations:
-    conduit.io/created-by: "{{.CliVersion}}"
+    {{.CreatedByAnnotation}}: {{.CliVersion}}
 spec:
   replicas: {{.WebReplicas}}
   template:
     metadata:
       labels:
         app: web
-        conduit.io/plane: control
+        {{.ControllerComponentLabel}}: web
       annotations:
-        conduit.io/created-by: "{{.CliVersion}}"
+        {{.CreatedByAnnotation}}: {{.CliVersion}}
     spec:
       containers:
       - name: web
@@ -291,9 +292,9 @@ metadata:
   namespace: {{.Namespace}}
   labels:
     app: prometheus
-    conduit.io/plane: control
+    {{.ControllerComponentLabel}}: prometheus
   annotations:
-    conduit.io/created-by: "{{.CliVersion}}"
+    {{.CreatedByAnnotation}}: {{.CliVersion}}
 spec:
   type: ClusterIP
   selector:
@@ -311,18 +312,18 @@ metadata:
   namespace: {{.Namespace}}
   labels:
     app: prometheus
-    conduit.io/plane: control
+    {{.ControllerComponentLabel}}: prometheus
   annotations:
-    conduit.io/created-by: "{{.CliVersion}}"
+    {{.CreatedByAnnotation}}: {{.CliVersion}}
 spec:
   replicas: {{.PrometheusReplicas}}
   template:
     metadata:
       labels:
         app: prometheus
-        conduit.io/plane: control
+        {{.ControllerComponentLabel}}: prometheus
       annotations:
-        conduit.io/created-by: "{{.CliVersion}}"
+        {{.CreatedByAnnotation}}: {{.CliVersion}}
     spec:
       serviceAccount: conduit-prometheus
       volumes:
@@ -358,9 +359,9 @@ metadata:
   namespace: {{.Namespace}}
   labels:
     app: prometheus
-    conduit.io/plane: control
+    {{.ControllerComponentLabel}}: prometheus
   annotations:
-    conduit.io/created-by: "{{.CliVersion}}"
+    {{.CreatedByAnnotation}}: {{.CliVersion}}
 data:
   prometheus.yml: |-
     global:
@@ -387,16 +388,18 @@ data:
 `
 
 type installConfig struct {
-	Namespace          string
-	ControllerImage    string
-	WebImage           string
-	PrometheusImage    string
-	ControllerReplicas uint
-	WebReplicas        uint
-	PrometheusReplicas uint
-	ImagePullPolicy    string
-	UUID               string
-	CliVersion         string
+	Namespace                string
+	ControllerImage          string
+	WebImage                 string
+	PrometheusImage          string
+	ControllerReplicas       uint
+	WebReplicas              uint
+	PrometheusReplicas       uint
+	ImagePullPolicy          string
+	UUID                     string
+	CliVersion               string
+	ControllerComponentLabel string
+	CreatedByAnnotation      string
 }
 
 var (
@@ -421,16 +424,18 @@ var installCmd = &cobra.Command{
 			return err
 		}
 		template.Execute(os.Stdout, installConfig{
-			Namespace:          controlPlaneNamespace,
-			ControllerImage:    fmt.Sprintf("%s/controller:%s", dockerRegistry, conduitVersion),
-			WebImage:           fmt.Sprintf("%s/web:%s", dockerRegistry, conduitVersion),
-			PrometheusImage:    "prom/prometheus:v1.8.1",
-			ControllerReplicas: controllerReplicas,
-			WebReplicas:        webReplicas,
-			PrometheusReplicas: prometheusReplicas,
-			ImagePullPolicy:    imagePullPolicy,
-			UUID:               uuid.NewV4().String(),
-			CliVersion:         fmt.Sprintf("conduit/cli %s", version.Version),
+			Namespace:                controlPlaneNamespace,
+			ControllerImage:          fmt.Sprintf("%s/controller:%s", dockerRegistry, conduitVersion),
+			WebImage:                 fmt.Sprintf("%s/web:%s", dockerRegistry, conduitVersion),
+			PrometheusImage:          "prom/prometheus:v1.8.1",
+			ControllerReplicas:       controllerReplicas,
+			WebReplicas:              webReplicas,
+			PrometheusReplicas:       prometheusReplicas,
+			ImagePullPolicy:          imagePullPolicy,
+			UUID:                     uuid.NewV4().String(),
+			CliVersion:               fmt.Sprintf("conduit/cli %s", version.Version),
+			ControllerComponentLabel: k8s.ControllerComponentLabel,
+			CreatedByAnnotation:      k8s.CreatedByAnnotation,
 		})
 		return nil
 	},
